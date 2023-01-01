@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div class="ques-div">
+<!--        <form method="post" novalidate>-->
+          <ul>
+        {% for data in q %}
+        <li><h2 class="qnum">Question {{data.q_id}}</h2>
+         <a href="{{ url_for('edit_question', id=data.q_id)}}"> <button class="btn btn-success btn-sm rounded-0" type="button" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fa fa-edit"></i></button></a>
+         <a href="{{ url_for('delete_question', id=data.q_id)}}"><button class="btn btn-danger btn-sm rounded-0" type="button" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fa fa-trash"></i></button>
+</a>
+
+        </li>
+
+        <li><h2 class="ques-heading">{{data.ques}}</h2></li>
+        {% endfor %} <h3> <a href="{{ url_for('add_question') }}">Add New Question</a>
+
+    </ul>
+        </br>
+
+<!--        {% for data in q %}-->
+
+<!--            <h2 class="qnum">Question {{data.q_id}}</h2>-->
+<!--            <div class="dotted-spaced"></div>-->
+<!--            <hr>-->
+<!--            <h1 class="ques-heading">{{data.ques}}</h1>-->
+<!--            <div class="options-div">-->
+<!--                {{ form.options(class="list-unstyled") }}-->
+<!--            </div>-->
+<!--            {{ form.submit(class="btn btn-primary btn-lg sub-btn") }}-->
+<!--        {% endfor %}-->
+<!--        </form>-->
+        <!-- <span class="check-circle">
+            <i class="fas fa-check-circle"></i>
+        </span> -->
+<!--        <p>Add New Question <a href="{{ url_for('register') }}"></a></p>-->
+    </div>
+
+
+{% endblock %}
+
