@@ -21,24 +21,39 @@
     <nav>
         <ul class="nav-links">
             <li> <a href="{{ url_for('home') }}"> Home </a> </li>
-<!--            {% if not g.user %}-->
+
+            {% if not g.user %}
+                {%if g.admin%}
+
+                <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>
+                {%else%}
+                 <li> <a href="{{ url_for('admin') }}"> admin </a> </li>
+                <li> <a href="{{ url_for('login') }}"> User </a> </li>
+                {%endif%}
+
+
+            {% elif g.user %}
+            <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>
+
+            {% endif %}
+<!--             {% if not g.admin %}-->
 <!--            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>-->
 <!--            <li> <a href="{{ url_for('login') }}"> User </a> </li>-->
 <!--            {% else %}-->
 <!--            <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>-->
 <!--            {% endif %}-->
-            {% if not g.admin and not g.user %}
-            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>
-            <li> <a href="{{ url_for('login') }}"> User </a> </li>
-            {% elif not g.admin %}
-            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>
-            <li> <a href="{{ url_for('login') }}"> User </a> </li>
-            {% elif not g.user %}
-            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>
-            <li> <a href="{{ url_for('login') }}"> User </a> </li>
-            {%else%}
-            <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>
-            {% endif %}
+<!--            {% if not g.admin and not g.user %}-->
+<!--            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>-->
+<!--            <li> <a href="{{ url_for('login') }}"> User </a> </li>-->
+<!--            {% elif not g.admin %}-->
+<!--            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>-->
+<!--            <li> <a href="{{ url_for('login') }}"> User </a> </li>-->
+<!--            {% elif not g.user %}-->
+<!--            <li> <a href="{{ url_for('admin') }}"> admin </a> </li>-->
+<!--            <li> <a href="{{ url_for('login') }}"> User </a> </li>-->
+<!--            {%else%}-->
+<!--            <li> <a href="{{ url_for('logout') }}"> Logout </a> </li>-->
+<!--            {% endif %}-->
 
         </ul>
     </nav>
