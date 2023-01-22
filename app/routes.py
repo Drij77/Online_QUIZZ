@@ -2,7 +2,7 @@ from app import app
 from flask import render_template, request, redirect, url_for, session, g, flash
 from werkzeug.urls import url_parse
 from app.forms import LoginForm, RegistrationForm, QuestionForm
-from app.models import User, Questions , Admin
+from app.models import User, Questions, Admin
 from app import db
 
 
@@ -10,6 +10,7 @@ from app import db
 def before_request():
     g.user = None
     g.admin = None
+    g.id=None
     # admin = Admin.query.filter_by(id=session['user_id']).first()
     if 'user_id' in session:
         user = User.query.filter_by(id=session['user_id']).first()
@@ -43,10 +44,13 @@ def admin():
     #     return redirect(url_for('home'))
     return render_template('admin.html', form=form)
 
+
 @app.route('/add_edit_delete', methods=['GET', 'POST'])
 def add_edit_delete():
     form = QuestionForm()
     q = Questions.query.all()
+    session['lst'] = [i.q_id for i in q]
+
     if not g.admin:
         return redirect(url_for('admin'))
     return render_template('add_edit_delete.html', form=form, q=q, title='Question {}'.format(id))
@@ -56,14 +60,10 @@ def add_edit_delete():
 def edit_question(id):
     form = QuestionForm()
     data = Questions.query.filter_by(q_id=id).first()
-    print(data)
+    # print(data)
     if request.method == 'POST':
-        print(request.form['question'])
+        # print(request.form['question'])
         if data:
-            # db.session.delete(data)
-            # db.session.commit()
-            # question = Questions(q_id=id,ques=request.form['question'], a=request.form['optionA'], b=request.form['optionB'],
-            #                      c=request.form['optionC'], d=request.form['optionD'], ans=request.form['ans'])
             data.ques=request.form['question']
             data.a=request.form['optionA']
             data.b=request.form['optionB']
@@ -74,6 +74,7 @@ def edit_question(id):
             return redirect(url_for('add_edit_delete'))
     return render_template('edit.html', data=data, form=form)
 
+
 @app.route('/delete_question/<int:id>', methods=['GET', 'POST'])
 def delete_question(id):
     data = Questions.query.filter_by(q_id=id).first()
@@ -83,6 +84,7 @@ def delete_question(id):
             db.session.commit()
             return redirect(url_for('add_edit_delete'))
     return redirect(url_for('add_edit_delete'))
+
 
 @app.route('/add_question', methods=['GET', 'POST'])
 def add_question():
@@ -99,6 +101,7 @@ def add_question():
         question = Questions(ques=question_data,a=option_a , b=option_b, c=option_c, d=option_d, ans=ans)
         db.session.add(question)
         db.session.commit()
+        return redirect(url_for('add_edit_delete'))
 
     return render_template('add_edit.html', form=form)
 
@@ -108,6 +111,10 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
+        q = Questions.query.all()
+
+        session['lst']=[ i.q_id for i in q]
+
         if user is None or not user.check_password(form.password.data):
             flash('Invalid Credential')
             return redirect(url_for('login'))
@@ -121,6 +128,7 @@ def login():
     if g.user:
         return redirect(url_for('home'))
     return render_template('login.html', form=form, title='Login')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -138,20 +146,22 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-
 @app.route('/question/<int:id>', methods=['GET', 'POST'])
 def question(id):
     form = QuestionForm()
-    # print(id)
-    q = Questions.query.filter_by(q_id=id).first()
-    print(q)
+    try:
+        session['lst'][id]
+    except:
+        return redirect(url_for('score'))
+    q = Questions.query.filter_by(q_id=session['lst'][id]).first()
+
     if not q:
         return redirect(url_for('score'))
     if not g.user:
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        print("get")
+
         try:
             option = request.form['options']
             if option == q.ans:
@@ -159,7 +169,7 @@ def question(id):
             return redirect(url_for('question', id=(id + 1)))
         except:
             flash('Please select valid option')
-            # form.options.choices = [(q.a, q.a), (q.b, q.b), (q.c, q.c), (q.d, q.d)]
+
             return redirect(url_for('question',id=id))
     form.options.choices = [(q.a, q.a), (q.b, q.b), (q.c, q.c), (q.d, q.d)]
     return render_template('question.html', form=form, q=q, title='Question {}'.format(id))
@@ -169,15 +179,23 @@ def question(id):
 def score():
     if not g.user:
         return redirect(url_for('login'))
+    q = Questions.query.all()
     g.user.marks = session['marks']
-    # db.session.commit()
+
     return render_template('score.html', title='Final Score')
+
 
 @app.route('/logout')
 def logout():
-    if not g.user:
-        return redirect(url_for('login'))
-    session.pop('user_id', None)
-    session.pop('admin_id',None)
-    session.pop('marks', None)
-    return redirect(url_for('home'))
+
+    if g.user:
+        session.pop('user_id', None)
+        session.pop('admin_id',None)
+        session.pop('marks', None)
+        redirect(url_for('home'))
+    elif g.admin:
+        session.pop('user_id', None)
+        session.pop('admin_id', None)
+        session.pop('marks', None)
+        redirect(url_for('home'))
+    return redirect(url_for('login'))
